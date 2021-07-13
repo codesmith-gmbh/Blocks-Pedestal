@@ -1,7 +1,7 @@
 (ns stan
   (:require [integrant.repl :as ir]
             [integrant.repl.state :as irs]
-            [codesmith.blocks.pedestal :as cb-pedestal]
+            [codesmith.blocks.pedestal :as cbp]
             [io.pedestal.test :refer [response-for]]
             [io.pedestal.http :as http]
             [ring.util.response :as ring-resp]
@@ -52,20 +52,20 @@
 
 (def system
   {:application :block-pedestal
-   :blocks      [::cb/pedestal]})
+   :blocks      [::cbp/pedestal]})
 
 (def profile
-  {:environment         :stan-dev
-   ::cb/pedestal        {:type             :dev
-                         :base-service-map base-service-map
-                         :routes-var       #'routes}})
+  {:environment   :stan-dev
+   ::cbp/pedestal {:type             ::cbp/dev
+                   :base-service-map base-service-map
+                   :routes-var       #'routes}})
 
 (ir/set-prep! (constantly (cb/system->ig system profile)))
 
 (comment
 
   (response-for
-    (-> irs/system ::cb-pedestal/server :io.pedestal.http/service-fn)
+    (-> irs/system ::cbp/server :io.pedestal.http/service-fn)
     :get
     "/")
 

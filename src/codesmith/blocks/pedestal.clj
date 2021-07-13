@@ -18,12 +18,12 @@
 (defmethod ig/init-key ::default-service-map
   [_ {:keys [base-service-map routes-var]}]
   (-> base-service-map
-      (merge {::env         :default
+      (merge {::env         ::default
               ::http/routes @routes-var})
       http/default-interceptors))
 
 (defmethod cb/typed-block-transform
-  [::cb/pedestal :default]
+  [::pedestal ::default]
   [block-key system+profile ig-config]
   (-> ig-config
       assoc-server
@@ -34,7 +34,7 @@
 (defmethod ig/init-key ::dev-service-map
   [_ {:keys [base-service-map routes-var]}]
   (-> base-service-map
-      (merge {::env                  :dev
+      (merge {::env                  ::dev
               ;; Routes can be a function that resolve routes,
               ;;  we can use this to set the routes to be reloadable
               ::http/routes          #(route/expand-routes @routes-var)
@@ -47,7 +47,7 @@
       http/dev-interceptors))
 
 (defmethod cb/typed-block-transform
-  [::cb/pedestal :dev]
+  [::pedestal ::dev]
   [block-key system+profile ig-config]
   (-> ig-config
       assoc-server
