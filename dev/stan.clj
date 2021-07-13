@@ -58,7 +58,7 @@
   {:environment   :stan-dev
    ::cbp/pedestal {:type             ::cbp/dev
                    :base-service-map base-service-map
-                   :routes-var       #'routes}})
+                   :routes-fn        #(deref #'routes)}})
 
 (ir/set-prep! (constantly (cb/system->ig system profile)))
 
