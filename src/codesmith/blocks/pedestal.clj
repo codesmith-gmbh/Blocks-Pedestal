@@ -4,6 +4,17 @@
             [io.pedestal.http :as http]
             [io.pedestal.http.route :as route]))
 
+(defmethod ig/init-key ::server [_ {:keys [service-map]}]
+  (-> service-map
+      http/create-server
+      http/start))
+
+(defmethod ig/halt-key! ::server [_ server]
+  (http/stop server))
+
+(defn assoc-server [ig-config]
+  (assoc ig-config ::server {:service-map (ig/ref ::service-map)}))
+
 (defmethod ig/init-key ::default-service-map
   [_ {:keys [base-service-map routes-var]}]
   (-> base-service-map
@@ -12,9 +23,11 @@
       http/default-interceptors))
 
 (defmethod cb/typed-block-transform
-  [::service-map :default]
+  [::cb/pedestal :default]
   [block-key system+profile ig-config]
-  (assoc ig-config ::default-service-map (-> system+profile block-key)))
+  (-> ig-config
+      assoc-server
+      (assoc ::default-service-map (-> system+profile block-key))))
 
 (derive ::default-service-map ::service-map)
 
@@ -34,22 +47,10 @@
       http/dev-interceptors))
 
 (defmethod cb/typed-block-transform
-  [::service-map :dev]
+  [::cb/pedestal :dev]
   [block-key system+profile ig-config]
-  (assoc ig-config ::dev-service-map (-> system+profile block-key)))
+  (-> ig-config
+      assoc-server
+      (assoc ::dev-service-map (-> system+profile block-key))))
 
 (derive ::dev-service-map ::service-map)
-
-(defmethod ig/init-key ::server [_ {:keys [service-map]}]
-  (-> service-map
-      http/create-server
-      http/start))
-
-(defmethod ig/halt-key! ::server [_ server]
-  (http/stop server))
-
-(defmethod cb/block-transform ::server
-  [_ system+profile ig-config]
-  (assoc ig-config ::server (merge
-                              {:service-map (ig/ref ::service-map)}
-                              (-> system+profile ::server))))

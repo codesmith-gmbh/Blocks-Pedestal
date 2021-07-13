@@ -52,15 +52,13 @@
 
 (def system
   {:application :block-pedestal
-   :blocks      [::cb-pedestal/service-map
-                 ::cb-pedestal/server]})
+   :blocks      [::cb/pedestal]})
 
 (def profile
-  {:environment              :stan-dev
-   ::cb-pedestal/service-map {:type             :dev
-                              :base-service-map base-service-map
-                              :routes-var       #'routes}
-   ::cb-pedestal/server      {}})
+  {:environment         :stan-dev
+   ::cb/pedestal        {:type             :dev
+                         :base-service-map base-service-map
+                         :routes-var       #'routes}})
 
 (ir/set-prep! (constantly (cb/system->ig system profile)))
 
