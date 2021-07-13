@@ -16,11 +16,12 @@
   (assoc ig-config ::server {:service-map (ig/ref ::service-map)}))
 
 (defmethod ig/init-key ::default-service-map
-  [_ {:keys [base-service-map routes-var]}]
+  [_ {:keys [base-service-map routes-var final-service-map-fn] :or {final-service-map-fn identity}}]
   (-> base-service-map
       (merge {::env         ::default
               ::http/routes @routes-var})
-      http/default-interceptors))
+      http/default-interceptors
+      final-service-map-fn))
 
 (defmethod cb/typed-block-transform
   [::pedestal ::default]
@@ -32,7 +33,7 @@
 (derive ::default-service-map ::service-map)
 
 (defmethod ig/init-key ::dev-service-map
-  [_ {:keys [base-service-map routes-var]}]
+  [_ {:keys [base-service-map routes-var final-service-map-fn] :or {final-service-map-fn identity}}]
   (-> base-service-map
       (merge {::env                  ::dev
               ;; Routes can be a function that resolve routes,
@@ -44,7 +45,8 @@
               ::http/allowed-origins {:creds true :allowed-origins (constantly true)}
               ::http/secure-headers  {:content-security-policy-settings {:object-src "'none'"}}})
       http/default-interceptors
-      http/dev-interceptors))
+      http/dev-interceptors
+      final-service-map-fn))
 
 (defmethod cb/typed-block-transform
   [::pedestal ::dev]
