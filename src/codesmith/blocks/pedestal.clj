@@ -24,10 +24,11 @@
 
 (defmethod cb/typed-block-transform
   [::pedestal ::default]
-  [block-key system+profile ig-config]
-  (-> ig-config
-      assoc-server
-      (assoc ::default-service-map (-> system+profile block-key))))
+  [block-key system+profile ig-config final-substitution]
+  [(-> ig-config
+       assoc-server
+       (assoc ::default-service-map (-> system+profile block-key)))
+   final-substitution])
 
 (derive ::default-service-map ::service-map)
 
@@ -48,9 +49,10 @@
 
 (defmethod cb/typed-block-transform
   [::pedestal ::dev]
-  [block-key system+profile ig-config]
-  (-> ig-config
-      assoc-server
-      (assoc ::dev-service-map (-> system+profile block-key))))
+  [block-key system+profile ig-config final-substitution]
+  [(-> ig-config
+       assoc-server
+       (assoc ::dev-service-map (-> system+profile block-key)))
+   final-substitution])
 
 (derive ::dev-service-map ::service-map)
