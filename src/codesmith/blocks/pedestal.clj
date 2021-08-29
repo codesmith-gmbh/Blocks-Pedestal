@@ -17,7 +17,9 @@
 
 (defmethod ig/init-key ::default-service-map
   [_ {:keys [base-service-map routes-fn]}]
-  (-> {::http/host "0.0.0.0"}
+  (-> {::http/host  "0.0.0.0"
+       ;; do not block thread that starts web server
+       ::http/join? false}
       (merge base-service-map)
       (merge {::env         ::default
               ::http/routes (routes-fn)})
@@ -40,8 +42,6 @@
               ;; Routes can be a function that resolve routes,
               ;;  we can use this to set the routes to be reloadable
               ::http/routes          #(route/expand-routes (routes-fn))
-              ;; do not block thread that starts web server
-              ::http/join?           false
               ;; all origins are allowed in dev mode
               ::http/allowed-origins {:creds true :allowed-origins (constantly true)}
               ::http/secure-headers  {:content-security-policy-settings {:object-src "'none'"}}})
