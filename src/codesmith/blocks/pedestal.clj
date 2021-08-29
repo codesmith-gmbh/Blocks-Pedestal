@@ -17,7 +17,8 @@
 
 (defmethod ig/init-key ::default-service-map
   [_ {:keys [base-service-map routes-fn]}]
-  (-> base-service-map
+  (-> {::http/host "0.0.0.0"}
+      (merge base-service-map)
       (merge {::env         ::default
               ::http/routes (routes-fn)})
       http/default-interceptors))
