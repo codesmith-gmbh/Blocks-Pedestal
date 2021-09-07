@@ -15,11 +15,13 @@
 (defn assoc-server [ig-config]
   (assoc ig-config ::server {:service-map (ig/ref ::service-map)}))
 
+(def core-settings
+  {::http/join? false})
+
 (defmethod ig/init-key ::default-service-map
   [_ {:keys [base-service-map routes-fn]}]
-  (-> {::http/host  "0.0.0.0"
-       ;; do not block thread that starts web server
-       ::http/join? false}
+  (-> core-settings
+      (merge {{::http/host "0.0.0.0"}})
       (merge base-service-map)
       (merge {::env         ::default
               ::http/routes (routes-fn)})
@@ -37,16 +39,17 @@
 
 (defmethod ig/init-key ::dev-service-map
   [_ {:keys [base-service-map routes-fn]}]
-  (-> base-service-map
-      (merge {::env                  ::dev
-              ;; Routes can be a function that resolve routes,
-              ;;  we can use this to set the routes to be reloadable
-              ::http/routes          #(route/expand-routes (routes-fn))
-              ;; all origins are allowed in dev mode
-              ::http/allowed-origins {:creds true :allowed-origins (constantly true)}
-              ::http/secure-headers  {:content-security-policy-settings {:object-src "'none'"}}})
-      http/default-interceptors
-      http/dev-interceptors))
+  (-> core-settings
+    (merge base-service-map)
+    (merge {::env                  ::dev
+            ;; Routes can be a function that resolve routes,
+            ;;  we can use this to set the routes to be reloadable
+            ::http/routes          #(route/expand-routes (routes-fn))
+            ;; all origins are allowed in dev mode
+            ::http/allowed-origins {:creds true :allowed-origins (constantly true)}
+            ::http/secure-headers  {:content-security-policy-settings {:object-src "'none'"}}})
+    http/default-interceptors
+    http/dev-interceptors))
 
 (defmethod cb/typed-block-transform
   [::pedestal ::dev]
